@@ -8,7 +8,7 @@ git submodule add https://github.com/mtoohey31/crkbd-keymap ./keyboards/crkbd/ke
 qmk compile -kb crkbd/rev1 -km mtoohey31
 ```
 
-You can safely ignore the `swapped-left-pins.patch` file, unless you also happen to have fried the same pins on your controller while building your board that I did 😅, if you did somehow though (and also so that I don't forget) you can apply the patch file to qmk's crkbd `config.h` by running:
+You can safely ignore the `swapped-left-pins.patch` file, unless you also happen to have fried the same pins on your controller while building your board that I did 😅 , if you did somehow though (and also so that I don't forget) you can apply the patch file to qmk's crkbd `config.h` by running:
 ```bash
 git apply keyboards/crkbd/keymaps/mtoohey31/swapped-left-pins.patch
 ```
