@@ -1,11 +1,13 @@
 #include QMK_KEYBOARD_H
-#include <print.h>
+#include <math.h>
+#include <stdio.h>
+#include "crkbd.h"
 
 extern uint8_t is_master;
 
 #define _QWERTY 0
-#define _MSHIFT 1
-#define _SECSHIFT 2
+#define _SHIFT 1
+#define _DOUBLESHIFT 2
 #define _NAV 3
 #define _NUM 4
 #define _FPS 5
@@ -14,42 +16,28 @@ extern uint8_t is_master;
 
 #define _______ KC_TRNS
 
-typedef struct {
-    bool is_press_action;
-    int  state;
-} tap;
-
-enum {
-    SINGLE_TAP  = 1,
-    SINGLE_HOLD = 2,
-    DOUBLE_TAP  = 3,
-    DOUBLE_HOLD = 4,
-    TRIPLE_TAP  = 5,
-    TRIPLE_HOLD = 6,
-};
-
-enum { TAPSHIFT = 0 };
-
 enum custom_keycodes { KC_MLBRC, KC_MRBRC };
-
-int cur_dance(qk_tap_dance_state_t *state);
-
-void x_finished(qk_tap_dance_state_t *state, void *user_data);
-void x_reset(qk_tap_dance_state_t *state, void *user_data);
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 [_QWERTY] = LAYOUT(
     KC_MLBRC, KC_Q,   KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_MRBRC,
-    LT(_NUM,KC_BSLS), KC_A, KC_S, KC_D, KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, LT(_SETTINGS, KC_QUOT),
-    TD(TAPSHIFT), KC_Z, KC_X,  KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, TD(TAPSHIFT),
-                               LGUI_T(KC_ESC), LALT_T(KC_BSPC), LCTL_T(KC_DEL), LT(_NAV, KC_ENT), KC_SPC, KC_TAB
+    LT(_SETTINGS,KC_BSLS), KC_A, KC_S, KC_D, KC_F, KC_G,  KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
+    LM(_SHIFT, MOD_LSFT), KC_Z, KC_X, KC_C, KC_V, KC_B,   KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, LM(_SHIFT, MOD_LSFT),
+                               LGUI_T(KC_ESC), LALT_T(KC_BSPC), LCTL_T(KC_DEL), LT(_NAV, KC_ENT), KC_SPC, LT(_NUM, KC_TAB)
 ),
 
-[_SECSHIFT] = LAYOUT(
+[_SHIFT] = LAYOUT(
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+    MO(_DOUBLESHIFT), _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, MO(_DOUBLESHIFT),
+                               _______, _______, _______, _______, _______, _______
+),
+
+[_DOUBLESHIFT] = LAYOUT(
     _______, _______, _______, KC_EQL,  KC_PERC, KC_TILD, _______, _______, _______, _______, KC_PLUS, _______,
     _______, KC_AT,   KC_AMPR, KC_DLR,  KC_CIRC, KC_GRV,  KC_MINS, _______, _______, _______, _______, _______,
-    MT(MOD_LSFT, KC_CAPS), _______, _______, KC_APP, _______, _______, KC_HASH, KC_ASTR, _______, _______, KC_EXLM, MT(MOD_RSFT, KC_CAPS),
+    LSFT_T(KC_CAPS), _______, _______, KC_APP, _______, _______, KC_HASH, KC_ASTR, _______, _______, KC_EXLM, RSFT_T(KC_CAPS),
                                _______, _______, _______, _______, _______, _______
 ),
 
@@ -90,86 +78,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 };
 
-int cur_dance(qk_tap_dance_state_t *state) {
-    if (state->count == 1) {
-        if (!state->pressed)
-            return SINGLE_TAP;
-        else
-            return SINGLE_HOLD;
-    } else if (state->count == 2) {
-        if (state->pressed || state->interrupted)
-            return DOUBLE_HOLD;
-        else
-            return DOUBLE_TAP;
-    } else if (state->count == 3) {
-        if (state->pressed || state->interrupted)
-            return TRIPLE_HOLD;
-        else
-            return TRIPLE_TAP;
-    } else
-        return 7;
-};
-
-static tap xtap_state = {.is_press_action = true, .state = 0};
-
-void x_finished(qk_tap_dance_state_t *state, void *user_data) {
-    xtap_state.state = cur_dance(state);
-    switch (xtap_state.state) {
-        case SINGLE_TAP:
-            set_oneshot_mods(MOD_LSFT);
-            break;
-        case SINGLE_HOLD:
-            register_code(KC_LSFT);
-            break;
-        case DOUBLE_TAP:
-            /* set_oneshot_layer(_SECSHIFT, ONESHOT_START); */
-            /* set_oneshot_layer(_SECSHIFT, ONESHOT_PRESSED); */
-            break;
-        case DOUBLE_HOLD:
-            layer_on(_SECSHIFT);
-            break;
-        case TRIPLE_TAP:
-            /* set_oneshot_mods(MOD_LSFT); */
-            /* set_oneshot_layer(_SECSHIFT, ONESHOT_START); */
-            /* set_oneshot_layer(_SECSHIFT, ONESHOT_PRESSED); */
-            break;
-        case TRIPLE_HOLD:
-            register_code(KC_LSFT);
-            layer_on(_SECSHIFT);
-            break;
-    }
-}
-void x_reset(qk_tap_dance_state_t *state, void *user_data) {
-    switch (xtap_state.state) {
-        case SINGLE_HOLD:
-            unregister_code(KC_LSFT);
-            break;
-        case DOUBLE_TAP:
-            /* clear_oneshot_layer_state(ONESHOT_OTHER_KEY_PRESSED); */
-            break;
-        case DOUBLE_HOLD:
-            layer_off(_SECSHIFT);
-            break;
-        case TRIPLE_HOLD:
-            unregister_code(KC_LSFT);
-            layer_off(_SECSHIFT);
-            break;
-    } xtap_state.state = 0;
-}
-
-qk_tap_dance_action_t tap_dance_actions[] = {[TAPSHIFT] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, x_finished, x_reset)};
-
-int RGB_current_mode;
-
 void persistent_default_layer_set(uint16_t default_layer) {
     eeconfig_update_default_layer(default_layer);
     default_layer_set(default_layer);
 }
 
 void matrix_init_user(void) {
-#ifdef RGBLIGHT_ENABLE
-    RGB_current_mode = rgblight_config.mode;
-#endif
+
 // SSD1306 OLED init, make sure to add #define SSD1306OLED in config.h
 #ifdef SSD1306OLED
     iota_gfx_init(!has_usb());  // turns on the display
@@ -180,7 +95,40 @@ void matrix_init_user(void) {
 #ifdef SSD1306OLED
 
 // When add source files to SRC in rules.mk, you can use functions.
-const char *read_layer_state(void);
+char layer_state_str[24];
+const char *read_layer_state(void) {
+  switch ((int) round(log(layer_state) / log(2)))
+  {
+  case _QWERTY:
+    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: QWERTY");
+    break;
+  case _SHIFT:
+    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Shift");
+    break;
+  case _DOUBLESHIFT:
+    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Double Shift");
+    break;
+  case _NAV:
+    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Navigation");
+    break;
+  case _NUM:
+    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Numpad");
+    break;
+  case _FPS:
+    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: FPS");
+    break;
+  case _LEAGUE:
+    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: League");
+    break;
+  case _SETTINGS:
+    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Settings");
+    break;
+  default:
+    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Undef-%ld", layer_state);
+  }
+
+  return layer_state_str;
+}
 const char *read_logo(void);
 void        set_keylog(uint16_t keycode, keyrecord_t *record);
 const char *read_keylog(void);
@@ -220,7 +168,7 @@ void iota_gfx_task_user(void) {
     matrix_render_user(&matrix);
     matrix_update(&display, &matrix);
 }
-#endif  // SSD1306OLED
+#endif
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (record->event.pressed) {
@@ -229,14 +177,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #endif
         // set_timelog();
     }
-    /* return true; */
 
     switch (keycode) {
         case KC_MLBRC:
             if (record->event.pressed) {
-                if ((keyboard_report->mods & MOD_BIT(KC_LSFT) || keyboard_report->mods & MOD_BIT(KC_RSFT)) && layer_state_is(_SECSHIFT)) {
+                if ((keyboard_report->mods & MOD_BIT(KC_LSFT) || keyboard_report->mods & MOD_BIT(KC_RSFT)) && layer_state_is(_DOUBLESHIFT)) {
                     register_code(KC_COMM);
-                } else if (IS_LAYER_ON(_SECSHIFT)) {
+                } else if (IS_LAYER_ON(_DOUBLESHIFT)) {
                     register_code(KC_LSFT);
                     register_code(KC_LBRC);
                     unregister_code(KC_LSFT);
@@ -261,17 +208,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         case KC_MRBRC:
             if (record->event.pressed) {
-                if ((keyboard_report->mods & MOD_BIT(KC_LSFT) || keyboard_report->mods & MOD_BIT(KC_RSFT)) && layer_state_is(_SECSHIFT)) {
+                if ((keyboard_report->mods & MOD_BIT(KC_LSFT) || keyboard_report->mods & MOD_BIT(KC_RSFT)) && layer_state_is(_DOUBLESHIFT)) {
                     register_code(KC_DOT);
-                } else if (IS_LAYER_ON(_SECSHIFT)) {
+                } else if (IS_LAYER_ON(_DOUBLESHIFT)) {
                     register_code(KC_LSFT);
                     register_code(KC_RBRC);
                     unregister_code(KC_LSFT);
-                } else if (keyboard_report->mods & MOD_BIT(KC_LSFT) && IS_LAYER_OFF(_SECSHIFT)) {
+                } else if (keyboard_report->mods & MOD_BIT(KC_LSFT) && IS_LAYER_OFF(_DOUBLESHIFT)) {
                     unregister_code(KC_LSFT);
                     register_code(KC_RBRC);
                     register_code(KC_LSFT);
-                } else if (keyboard_report->mods & MOD_BIT(KC_RSFT) && IS_LAYER_OFF(_SECSHIFT)) {
+                } else if (keyboard_report->mods & MOD_BIT(KC_RSFT) && IS_LAYER_OFF(_DOUBLESHIFT)) {
                     unregister_code(KC_LSFT);
                     register_code(KC_RBRC);
                     register_code(KC_LSFT);
