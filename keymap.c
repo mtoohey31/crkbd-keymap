@@ -1,22 +1,26 @@
 #include QMK_KEYBOARD_H
 #include <math.h>
-#include <stdio.h>
 #include "crkbd.h"
 
 extern uint8_t is_master;
 
-#define _QWERTY 0
-#define _SHIFT 1
-#define _DOUBLESHIFT 2
-#define _NAV 3
-#define _NUM 4
-#define _FPS 5
-#define _LEAGUE 6
-#define _SETTINGS 7
+enum crkbd_layers {
+    _QWERTY,
+    _SHIFT,
+    _DOUBLESHIFT,
+    _NAV,
+    _NUM,
+    _FPS,
+    _LEAGUE,
+    _SETTINGS
+};
 
 #define _______ KC_TRNS
 
-enum custom_keycodes { KC_MLBRC, KC_MRBRC };
+enum custom_keycodes {
+    KC_MLBRC,
+    KC_MRBRC
+};
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -70,8 +74,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 ),
 
 [_SETTINGS] = LAYOUT(
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO(_LEAGUE), XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO(_FPS), XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO(_FPS), TO(_LEAGUE), XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,XXXXXXX,
                                MAGIC_SWAP_LCTL_LGUI, XXXXXXX, MAGIC_UNSWAP_LCTL_LGUI, XXXXXXX, XXXXXXX, XXXXXXX
 )
@@ -84,7 +88,6 @@ void persistent_default_layer_set(uint16_t default_layer) {
 }
 
 void matrix_init_user(void) {
-
 // SSD1306 OLED init, make sure to add #define SSD1306OLED in config.h
 #ifdef SSD1306OLED
     iota_gfx_init(!has_usb());  // turns on the display
@@ -95,39 +98,38 @@ void matrix_init_user(void) {
 #ifdef SSD1306OLED
 
 // When add source files to SRC in rules.mk, you can use functions.
-char layer_state_str[24];
+char        layer_state_str[24];
 const char *read_layer_state(void) {
-  switch ((int) round(log(layer_state) / log(2)))
-  {
-  case _QWERTY:
-    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: QWERTY");
-    break;
-  case _SHIFT:
-    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Shift");
-    break;
-  case _DOUBLESHIFT:
-    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Double Shift");
-    break;
-  case _NAV:
-    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Navigation");
-    break;
-  case _NUM:
-    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Numpad");
-    break;
-  case _FPS:
-    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: FPS");
-    break;
-  case _LEAGUE:
-    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: League");
-    break;
-  case _SETTINGS:
-    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Settings");
-    break;
-  default:
-    snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Undef-%ld", layer_state);
-  }
+    switch ((int)round(log(layer_state) / log(2))) {
+        case _QWERTY:
+            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: QWERTY");
+            break;
+        case _SHIFT:
+            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Shift");
+            break;
+        case _DOUBLESHIFT:
+            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Double Shift");
+            break;
+        case _NAV:
+            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Navigation");
+            break;
+        case _NUM:
+            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Numpad");
+            break;
+        case _FPS:
+            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: FPS");
+            break;
+        case _LEAGUE:
+            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: League");
+            break;
+        case _SETTINGS:
+            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Settings");
+            break;
+        default:
+            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Undef-%ld", layer_state);
+    }
 
-  return layer_state_str;
+    return layer_state_str;
 }
 const char *read_logo(void);
 void        set_keylog(uint16_t keycode, keyrecord_t *record);
@@ -181,17 +183,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case KC_MLBRC:
             if (record->event.pressed) {
-                if ((keyboard_report->mods & MOD_BIT(KC_LSFT) || keyboard_report->mods & MOD_BIT(KC_RSFT)) && layer_state_is(_DOUBLESHIFT)) {
-                    register_code(KC_COMM);
-                } else if (IS_LAYER_ON(_DOUBLESHIFT)) {
+                if (IS_LAYER_ON(_DOUBLESHIFT)) {
                     register_code(KC_LSFT);
                     register_code(KC_LBRC);
                     unregister_code(KC_LSFT);
-                } else if (keyboard_report->mods & MOD_BIT(KC_LSFT)) {
-                    unregister_code(KC_LSFT);
-                    register_code(KC_LBRC);
-                    register_code(KC_LSFT);
-                } else if (keyboard_report->mods & MOD_BIT(KC_RSFT)) {
+                } else if (IS_LAYER_ON(_SHIFT)) {
                     unregister_code(KC_LSFT);
                     register_code(KC_LBRC);
                     register_code(KC_LSFT);
@@ -208,17 +204,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
         case KC_MRBRC:
             if (record->event.pressed) {
-                if ((keyboard_report->mods & MOD_BIT(KC_LSFT) || keyboard_report->mods & MOD_BIT(KC_RSFT)) && layer_state_is(_DOUBLESHIFT)) {
-                    register_code(KC_DOT);
-                } else if (IS_LAYER_ON(_DOUBLESHIFT)) {
+                if (IS_LAYER_ON(_DOUBLESHIFT)) {
                     register_code(KC_LSFT);
                     register_code(KC_RBRC);
                     unregister_code(KC_LSFT);
-                } else if (keyboard_report->mods & MOD_BIT(KC_LSFT) && IS_LAYER_OFF(_DOUBLESHIFT)) {
-                    unregister_code(KC_LSFT);
-                    register_code(KC_RBRC);
-                    register_code(KC_LSFT);
-                } else if (keyboard_report->mods & MOD_BIT(KC_RSFT) && IS_LAYER_OFF(_DOUBLESHIFT)) {
+                } else if (IS_LAYER_ON(_SHIFT)) {
                     unregister_code(KC_LSFT);
                     register_code(KC_RBRC);
                     register_code(KC_LSFT);

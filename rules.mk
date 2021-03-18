@@ -9,4 +9,4 @@ SRC +=  ./lib/glcdfont.c \
         # ./lib/timelogger.c \
 
 MOUSEKEY_ENABLE=yes
-# CONSOLE_ENABLE=yes
+NKRO_ENABLE=yes
