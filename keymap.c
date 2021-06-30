@@ -12,6 +12,7 @@ enum crkbd_layers {
     _NUM,
     _FPS,
     _LEAGUE,
+    _PLOVER,
     _SETTINGS
 };
 
@@ -19,7 +20,8 @@ enum crkbd_layers {
 
 enum custom_keycodes {
     KC_MLBRC,
-    KC_MRBRC
+    KC_MRBRC,
+    TG_PLV
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -73,10 +75,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                KC_LCTL, KC_SPC,  KC_B,    _______, _______, _______
 ),
 
+[_PLOVER] = LAYOUT(
+    XXXXXXX, KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC,
+    TG_PLV,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
+    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,    KC_1,
+                               XXXXXXX, KC_C,    KC_V,    KC_N,    KC_M,    XXXXXXX
+),
+
 [_SETTINGS] = LAYOUT(
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, RESET, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO(_FPS), TO(_LEAGUE), XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TG_PLV,  XXXXXXX, MAGIC_TOGGLE_NKRO, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,XXXXXXX,
                                XXXXXXX, MAGIC_SWAP_LCTL_LGUI, MAGIC_UNSWAP_LCTL_LGUI, XXXXXXX, XXXXXXX, XXXXXXX
 )
 
@@ -223,6 +232,25 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 unregister_code(KC_0);
             }
             return false;
+        case TG_PLV:
+            if (record->event.pressed) {
+            } else {
+                layer_invert(_PLOVER);
+                register_code(KC_E);
+                register_code(KC_R);
+                register_code(KC_F);
+                register_code(KC_V);
+                register_code(KC_O);
+                register_code(KC_L);
+                unregister_code(KC_E);
+                unregister_code(KC_R);
+                unregister_code(KC_F);
+                unregister_code(KC_V);
+                unregister_code(KC_O);
+                unregister_code(KC_L);
+            }
+            return false;
+            break;
         default:
             return true;
     }
