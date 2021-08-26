@@ -21,16 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include "crkbd.h"
 
-extern uint8_t is_master;
-
 enum crkbd_layers {
     _QWERTY,
-    _SHIFT,
-    _DOUBLESHIFT,
     _NAV,
     _NUM,
     _FPS,
-    _LEAGUE,
+    _MOBA,
     _PLOVER,
     _SETTINGS
 };
@@ -46,24 +42,10 @@ enum custom_keycodes {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 [_QWERTY] = LAYOUT(
-    KC_MLBRC, KC_Q,   KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_MRBRC,
+    KC_LPRN,  KC_Q,   KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_RPRN,
     LT(_SETTINGS,KC_BSLS), KC_A, KC_S, KC_D, KC_F, KC_G,  KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-    LM(_SHIFT, MOD_LSFT), KC_Z, KC_X, KC_C, KC_V, KC_B,   KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, LM(_SHIFT, MOD_LSFT),
+    KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
                                LALT_T(KC_ESC), LGUI_T(KC_BSPC), LCTL_T(KC_DEL), LT(_NAV, KC_ENT), KC_SPC, LT(_NUM, KC_TAB)
-),
-
-[_SHIFT] = LAYOUT(
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    MO(_DOUBLESHIFT), _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, MO(_DOUBLESHIFT),
-                               _______, _______, _______, _______, _______, _______
-),
-
-[_DOUBLESHIFT] = LAYOUT(
-    _______, _______, _______, KC_EQL,  KC_PERC, KC_TILD, _______, _______, _______, _______, KC_PLUS, _______,
-    _______, KC_AT,   KC_AMPR, KC_DLR,  KC_CIRC, KC_GRV,  KC_MINS, _______, _______, _______, _______, _______,
-    LSFT_T(KC_CAPS), _______, _______, KC_APP, _______, _______, KC_HASH, KC_ASTR, _______, _______, KC_EXLM, RSFT_T(KC_CAPS),
-                               _______, _______, _______, _______, _______, _______
 ),
 
 [_NAV] = LAYOUT(
@@ -74,10 +56,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 ),
 
 [_NUM] = LAYOUT(
-    KC_MLBRC, KC_F1,  KC_F2,   KC_F3,   KC_F4,   KC_TILD, KC_SLSH, KC_7,    KC_8,    KC_9,    KC_MINS, KC_MRBRC,
-    KC_LT,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_HASH, KC_ASTR, KC_4,    KC_5,    KC_6,    KC_PLUS, KC_GT,
-    _______, KC_F9,   KC_F10,  KC_F11,  KC_F12,  KC_PERC, KC_CIRC, KC_1,    KC_2,    KC_3,    KC_EQL,  _______,
-                               _______, _______, _______, TG(_NUM), KC_0,   _______
+    KC_LBRC, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_TILD, KC_SLSH, KC_7,    KC_8,    KC_9,    KC_MINS, KC_RBRC,
+    _______, KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_GRV,  KC_ASTR, KC_4,    KC_5,    KC_6,    KC_PLUS, KC_APP,
+    _______, KC_F9,   KC_F10,  KC_F11,  KC_F12,  KC_HASH, KC_PERC, KC_1,    KC_2,    KC_3,    KC_EQL,  _______,
+                               _______, _______, _______, DF(_NUM), KC_0,   DF(_QWERTY)
 ),
 
 [_FPS] = LAYOUT(
@@ -87,8 +69,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                KC_LALT, KC_SPC,  KC_LCTL, _______, _______, _______
 ),
 
-[_LEAGUE] = LAYOUT(
-    KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    _______, _______, _______, _______, _______, TG(_LEAGUE),
+[_MOBA] = LAYOUT(
+    KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    _______, _______, _______, _______, _______, TG(_MOBA),
     KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    _______, _______, _______, _______, _______, _______,
     KC_LSFT, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    _______, _______, _______, _______, _______, _______,
                                KC_LCTL, KC_SPC,  KC_B,    _______, _______, _______
@@ -103,154 +85,120 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 [_SETTINGS] = LAYOUT(
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, RESET, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO(_FPS), TO(_LEAGUE), XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TO(_FPS), TO(_MOBA), XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, TG_PLV,  XXXXXXX, MAGIC_TOGGLE_NKRO, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,XXXXXXX,
                                XXXXXXX, MAGIC_SWAP_LCTL_LGUI, MAGIC_UNSWAP_LCTL_LGUI, XXXXXXX, XXXXXXX, XXXXXXX
 )
 
 };
 
-void persistent_default_layer_set(uint16_t default_layer) {
-    eeconfig_update_default_layer(default_layer);
-    default_layer_set(default_layer);
+
+#ifdef OLED_DRIVER_ENABLE
+oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+  if (!is_keyboard_master()) {
+    return OLED_ROTATION_180;  // flips the display 180 degrees if offhand
+  }
+  return rotation;
 }
 
-void matrix_init_user(void) {
-// SSD1306 OLED init, make sure to add #define SSD1306OLED in config.h
-#ifdef SSD1306OLED
-    iota_gfx_init(!has_usb());  // turns on the display
-#endif
-}
-
-// SSD1306 OLED update loop, make sure to add #define SSD1306OLED in config.h
-#ifdef SSD1306OLED
-
-// When add source files to SRC in rules.mk, you can use functions.
-char        layer_state_str[24];
-const char *read_layer_state(void) {
+void oled_render_layer_state(void) {
+    oled_write_P(PSTR("Layer: "), false);
     switch ((int)round(log(layer_state) / log(2))) {
         case _QWERTY:
-            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: QWERTY");
-            break;
-        case _SHIFT:
-            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Shift");
-            break;
-        case _DOUBLESHIFT:
-            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Double Shift");
+            oled_write_ln_P(PSTR("QWERTY"), false);
             break;
         case _NAV:
-            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Navigation");
+            oled_write_ln_P(PSTR("Navigation"), false);
             break;
         case _NUM:
-            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Numpad");
+            oled_write_ln_P(PSTR("Numpad"), false);
             break;
         case _FPS:
-            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: FPS");
+            oled_write_ln_P(PSTR("FPS"), false);
             break;
-        case _LEAGUE:
-            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: League");
+        case _MOBA:
+            oled_write_ln_P(PSTR("MOBA"), false);
+            break;
+        case _PLOVER:
+            oled_write_ln_P(PSTR("Plover"), false);
             break;
         case _SETTINGS:
-            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Settings");
+            oled_write_ln_P(PSTR("Settings"), false);
             break;
-        default:
-            snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Undef-%ld", layer_state);
     }
-
-    return layer_state_str;
 }
-const char *read_logo(void);
-void        set_keylog(uint16_t keycode, keyrecord_t *record);
-const char *read_keylog(void);
-const char *read_keylogs(void);
 
-// const char *read_mode_icon(bool swap);
-// const char *read_host_led_state(void);
-// void set_timelog(void);
-// const char *read_timelog(void);
 
-void matrix_scan_user(void) { iota_gfx_task(); }
+char keylog_str[24] = {};
 
-void matrix_render_user(struct CharacterMatrix *matrix) {
-    if (is_master) {
-        // If you want to change the display of OLED, you need to change here
-        matrix_write_ln(matrix, read_layer_state());
-        matrix_write_ln(matrix, read_keylog());
-        // matrix_write_ln(matrix, read_keylogs());
-        // matrix_write_ln(matrix, read_mode_icon(keymap_config.swap_lalt_lgui));
-        // matrix_write_ln(matrix, read_host_led_state());
-        // matrix_write_ln(matrix, read_timelog());
+const char code_to_name[60] = {
+    ' ', ' ', ' ', ' ', 'a', 'b', 'c', 'd', 'e', 'f',
+    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+    'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+    'R', 'E', 'B', 'T', '_', '-', '=', '[', ']', '\\',
+    '#', ';', '\'', '`', ',', '.', '/', ' ', ' ', ' '};
+
+void set_keylog(uint16_t keycode, keyrecord_t *record) {
+  char name = ' ';
+    if ((keycode >= QK_MOD_TAP && keycode <= QK_MOD_TAP_MAX) ||
+        (keycode >= QK_LAYER_TAP && keycode <= QK_LAYER_TAP_MAX)) { keycode = keycode & 0xFF; }
+  if (keycode < 60) {
+    name = code_to_name[keycode];
+  }
+
+  // update keylog
+  snprintf(keylog_str, sizeof(keylog_str), "%dx%d, k%2d : %c",
+           record->event.key.row, record->event.key.col,
+           keycode, name);
+}
+
+void oled_render_keylog(void) {
+    oled_write(keylog_str, false);
+}
+
+void render_bootmagic_status(bool status) {
+    /* Show Ctrl-Gui Swap options */
+    static const char PROGMEM logo[][2][3] = {
+        {{0x97, 0x98, 0}, {0xb7, 0xb8, 0}},
+        {{0x95, 0x96, 0}, {0xb5, 0xb6, 0}},
+    };
+    if (status) {
+        oled_write_ln_P(logo[0][0], false);
+        oled_write_ln_P(logo[0][1], false);
     } else {
-        matrix_write(matrix, read_logo());
+        oled_write_ln_P(logo[1][0], false);
+        oled_write_ln_P(logo[1][1], false);
     }
 }
 
-void matrix_update(struct CharacterMatrix *dest, const struct CharacterMatrix *source) {
-    if (memcmp(dest->display, source->display, sizeof(dest->display))) {
-        memcpy(dest->display, source->display, sizeof(dest->display));
-        dest->dirty = true;
-    }
+void oled_render_logo(void) {
+    static const char PROGMEM crkbd_logo[] = {
+        0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f, 0x90, 0x91, 0x92, 0x93, 0x94,
+        0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, 0xb0, 0xb1, 0xb2, 0xb3, 0xb4,
+        0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf, 0xd0, 0xd1, 0xd2, 0xd3, 0xd4,
+        0};
+    oled_write_P(crkbd_logo, false);
 }
 
-void iota_gfx_task_user(void) {
-    struct CharacterMatrix matrix;
-    matrix_clear(&matrix);
-    matrix_render_user(&matrix);
-    matrix_update(&display, &matrix);
+void oled_task_user(void) {
+    if (is_keyboard_master()) {
+        oled_render_layer_state();
+        oled_render_keylog();
+    } else {
+        oled_render_logo();
+    }
 }
-#endif
+#endif // OLED_DRIVER_ENABLE
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+#ifdef OLED_DRIVER_ENABLE
     if (record->event.pressed) {
-#ifdef SSD1306OLED
         set_keylog(keycode, record);
-#endif
-        // set_timelog();
     }
+#endif // OLED_DRIVER_ENABLE
 
     switch (keycode) {
-        case KC_MLBRC:
-            if (record->event.pressed) {
-                if (IS_LAYER_ON(_DOUBLESHIFT)) {
-                    register_code(KC_LSFT);
-                    register_code(KC_LBRC);
-                    unregister_code(KC_LSFT);
-                } else if (IS_LAYER_ON(_SHIFT)) {
-                    unregister_code(KC_LSFT);
-                    register_code(KC_LBRC);
-                    register_code(KC_LSFT);
-                } else {
-                    register_code(KC_LSFT);
-                    register_code(KC_9);
-                    unregister_code(KC_LSFT);
-                }
-            } else {
-                unregister_code(KC_COMM);
-                unregister_code(KC_LBRC);
-                unregister_code(KC_9);
-            }
-            return false;
-        case KC_MRBRC:
-            if (record->event.pressed) {
-                if (IS_LAYER_ON(_DOUBLESHIFT)) {
-                    register_code(KC_LSFT);
-                    register_code(KC_RBRC);
-                    unregister_code(KC_LSFT);
-                } else if (IS_LAYER_ON(_SHIFT)) {
-                    unregister_code(KC_LSFT);
-                    register_code(KC_RBRC);
-                    register_code(KC_LSFT);
-                } else {
-                    register_code(KC_LSFT);
-                    register_code(KC_0);
-                    unregister_code(KC_LSFT);
-                }
-            } else {
-                unregister_code(KC_DOT);
-                unregister_code(KC_RBRC);
-                unregister_code(KC_0);
-            }
-            return false;
         case TG_PLV:
             if (record->event.pressed) {
             } else {
@@ -274,11 +222,3 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return true;
     }
 }
-
-/* void keyboard_post_init_user(void) { */
-/*     /1* Customise these values to desired behaviour *1/ */
-/*     /1* debug_enable = true; *1/ */
-/*     /1* debug_matrix = true; *1/ */
-/*     /1* debug_keyboard=true; *1/ */
-/*     /1* debug_mouse=true; *1/ */
-/* } */
