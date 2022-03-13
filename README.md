@@ -1,10 +1,6 @@
 # crkbd Keymap
 
-This repository contains my [crkbd](https://github.com/foostan/crkbd) keymap.
-
-![My board](./my-board.jpg)
-
-To try this keymap out on your board, set up QMK firmware on your system as per the [guide](https://docs.qmk.fm/#/newbs_getting_started), then, while in the `qmk_firmware` directory, run the following commands:
+This repository contains my [crkbd](https://github.com/foostan/crkbd) keymap. To try this keymap out on your board, set up QMK firmware on your system as per the [guide](https://docs.qmk.fm/#/newbs_getting_started), then, while in the `qmk_firmware` directory, run the following commands:
 
 ```bash
 git submodule add https://github.com/mtoohey31/crkbd-keymap ./keyboards/crkbd/keymaps/mtoohey31
